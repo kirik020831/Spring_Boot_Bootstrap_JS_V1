@@ -1,4 +1,4 @@
-package springboot.springBootMVC.security;
+package springboot.springBootMVC.config.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,7 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import springboot.springBootMVC.security.handler.SuccessUserHandler;
+import springboot.springBootMVC.config.security.handler.SuccessUserHandler;
 
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -40,6 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .access("hasAnyAuthority('ADMIN')")
                 .and()
                 .formLogin() // Spring сам подставит свою логин форму
+                .loginPage("/login")  //указываем свою форму
                 .usernameParameter("email")
                 .successHandler(successUserHandler) // подключаем наш SuccessHandler для перенаправления по ролям
                 // Handler - обработчик успешной аутентификации
