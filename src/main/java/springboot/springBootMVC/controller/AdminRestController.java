@@ -2,27 +2,32 @@ package springboot.springBootMVC.controller;
 
 import javassist.NotFoundException;
 import lombok.SneakyThrows;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springboot.springBootMVC.model.DTO.UserDTO;
+import springboot.springBootMVC.dao.UserRepository;
 import springboot.springBootMVC.model.Role;
 import springboot.springBootMVC.model.User;
 import springboot.springBootMVC.service.RoleService;
 import springboot.springBootMVC.service.UserService;
 
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping(value = "/api/admin",produces = MediaType.APPLICATION_JSON_VALUE)
 public class AdminRestController {
     private final UserService userService;
     private final RoleService roleService;
+    private final UserRepository userRepository;
 
-    public AdminRestController(UserService userService, RoleService roleService) {
+    public AdminRestController(UserService userService, RoleService roleService, UserRepository userRepository) {
         this.userService = userService;
         this.roleService = roleService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/list")
@@ -32,11 +37,10 @@ public class AdminRestController {
     }
 
     @PostMapping()
-    public ResponseEntity<List<User>> addNewUser(@RequestBody UserDTO userDTO) throws NotFoundException {
-        User user = new User(userDTO);
-        user.setRoles(roleService.getRoleSet(userDTO));
+    public ResponseEntity<User> addNewUser(@RequestBody User user) {
+        HttpHeaders headers = new HttpHeaders();
         userService.saveUser(user);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(user,headers,HttpStatus.CREATED);
     }
 
     @GetMapping("/roles")
@@ -50,12 +54,10 @@ public class AdminRestController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PutMapping()
-    public ResponseEntity<User> editUser(@RequestBody UserDTO userDTO) throws NotFoundException {
-        User user = new User(userDTO);
-        user.setRoles(roleService.getRoleSet(userDTO));
+    @PutMapping("/update")
+    public ResponseEntity<User> editUser(@RequestBody User user) {
         userService.update(user);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(user,HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -63,5 +65,10 @@ public class AdminRestController {
         User user = userService.getById(id);
         userService.delete(user);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @GetMapping("/getUser")
+    public ResponseEntity<User> getUser(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName());
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 }

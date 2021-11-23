@@ -1,7 +1,6 @@
 package springboot.springBootMVC.service;
 
 import javassist.NotFoundException;
-import springboot.springBootMVC.model.DTO.UserDTO;
 import springboot.springBootMVC.model.Role;
 
 import java.util.List;
@@ -19,5 +18,5 @@ public interface RoleService {
 
     Role getByName(String roleName) throws NotFoundException;
 
-    Set<Role> getRoleSet(UserDTO userDTO) throws NotFoundException;
+    Set<Role> getRoleSet(String[] role) throws NotFoundException;
 }

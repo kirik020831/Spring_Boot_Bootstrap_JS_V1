@@ -3,8 +3,6 @@ package springboot.springBootMVC.service;
 import javassist.NotFoundException;
 import org.springframework.stereotype.Service;
 import springboot.springBootMVC.dao.RoleRepository;
-
-import springboot.springBootMVC.model.DTO.UserDTO;
 import springboot.springBootMVC.model.Role;
 
 
@@ -52,9 +50,9 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Set<Role> getRoleSet(UserDTO userDTO) throws NotFoundException {
+    public Set<Role> getRoleSet(String[] role) throws NotFoundException {
         Set<Role> roleSet = new HashSet<>();
-        for (String roles : userDTO.getRoleNames()) {
+        for (String roles : role) {
             roleSet.add(getByName(roles));
         }
         return roleSet;

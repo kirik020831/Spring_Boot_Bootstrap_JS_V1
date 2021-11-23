@@ -1,5 +1,6 @@
 package springboot.springBootMVC.model;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,6 +11,10 @@ import java.util.Set;
 
 @Entity
 @Table(name = "roles")
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY,
+        getterVisibility = JsonAutoDetect.Visibility.NONE,
+        isGetterVisibility = JsonAutoDetect.Visibility.NONE,
+        setterVisibility = JsonAutoDetect.Visibility.NONE)
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter

@@ -1,198 +1,387 @@
 //___________________________________________________________________________________________________________________ //
 //                                            Выводим всех пользователей                                              //
-getAllUsers()
-function getAllUsers () {
-  $('#table').empty()
-  $.getJSON('/api/admin/list', function (data) {
-    $.each(data, function (key, user) {
-      let roleAss = []
-      for (let i = 0; i < user.roles.length; i++) {
-        roleAss.push(user.roles[i].name)
-      }
-      $('#tableAllUsers').append($('<tr>').append(
-        $('<td>').text(user.id),
-        $('<td>').text(user.username),
-        $('<td>').text(user.lastname),
-        $('<td>').text(user.age),
-        $('<td>').text(user.email),
-        $('<td>').text(roleAss.join(', ')),
-        $('<td>').
-          append(
-            '<button type=\'button\' data-toggle=\'modal\' class=\'btn-info btn\'' +
-            ' data-target=\'#editUserModal\' data-user-id=\'' + user.id +
-            '\'>Edit</button>'),
-        $('<td>').
-          append(
-            '<button type=\'button\' data-toggle=\'modal\' class=\'btn btn-danger\'' +
-            ' data-target=\'#deleteUserModal\' data-user-id=\'' + user.id +
-            '\'>Delete</button>'),
-        ),
-      )
+$(document).ready(function () {
+    getAllUsers();
+});
+const del = document.getElementById('delete')
+const table = document.querySelector('#tableAllUsers tbody');
+let temp = '';
+
+async function getAllUsers() {
+    await fetch('/api/admin/list')
+        .then((response) => response.json())
+        .then((users) => {
+            users.forEach(user => {
+
+                let rolesString = "";
+                user.roles.forEach(role => rolesString += role.name + " ");
+
+                temp += "<tr>"
+                temp += "<td>" + user.id
+                temp += "<td>" + user.username + "</td>"
+                temp += "<td>" + user.lastname + "</td>"
+                temp += "<td>" + user.age + "</td>"
+                temp += "<td>" + user.email + "</td>"
+                temp += "<td>" + rolesString + "</td>"
+                temp += "<td>"
+                temp += "<button type='button' class='btn btn-info edit-btn'  " +
+                    "onclick='getModalEdit(" + user.id + ")' data-toggle='modal'>Edit</button>"
+                temp += "</td>"
+                temp += "<td>"
+                temp += "<button type='button' class='btn btn-danger' " +
+                    "onclick='getModalDelete(" + user.id + ")' data-toggle='modal' >Delete</button>"
+                temp += "</td>"
+
+            });
+            table.innerHTML = temp;
+        });
+    $("#tableAllUsers").find('button').on('click', (event) => {
+        let defaultModal = $('#defaultModal');
+
+        let targetButton = $(event.target);
+        let buttonUserId = targetButton.attr('data-userid');
+        let buttonAction = targetButton.attr('data-action');
+
+        defaultModal.attr('data-userid', buttonUserId);
+        defaultModal.attr('data-action', buttonAction);
+        defaultModal.modal('show');
     })
-  })
-  $('[href="#admins"]').on('show.bs.tab', (e) => {
-    location.reload()
-  })
 }
 //____________________________________________________________________________________________________________________//
 //                                            Редактируем пользователя                                                //
-$('#editUserModal').on('show.bs.modal', (e) => {
-  let userId = $(e.relatedTarget).data('user-id')
+function edit() {
+    let id = document.getElementById('editID').value;
+    let username = document.getElementById('editFirstName').value;
+    let lastname = document.getElementById('editLastName').value;
+    let age = document.getElementById('editAge').value;
+    let email = document.getElementById('editEmail').value;
+    let password = document.getElementById('editPassword').value;
+    let roles = document.getElementById('editRole').value;
 
-  $.ajax({
-    url: '/api/admin/' + userId,
-    type: 'GET',
-    dataType: 'json',
-  }).done((msg) => {
-    let user = JSON.parse(JSON.stringify(msg))
-    $.getJSON('/api/admin/roles', function (editRole) {
-      $('#id').empty().val(user.id)
-      $('#firstname').empty().val(user.username)
-      $('#lastname').empty().val(user.lastname)
-      $('#age').empty().val(user.age)
-      $('#Email').empty().val(user.email)
-      $('#password').empty().val(user.password)
-      $('#roles').empty()
-      $.each(editRole, (i, role) => {
-        $('#roles').append(
-            $('<option>').text(role.name),
-        )
-      })
-      $('#roles').val(user.roles)
+    console.log(username)
+
+    let rol = [];
+    if (roles === "ADMIN") {
+        let role = {
+            'id': 1,
+            'name': 'ADMIN'
+        }
+        rol.push(role)
+    }
+    if (roles === "USER") {
+        let role = {
+            'id': 2,
+            'name': 'USER'
+        }
+        rol.push(role)
+    }
+
+    fetch('/api/admin/update', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            id,
+            username,
+            lastname,
+            age,
+            email,
+            password,
+            'roles': rol
+        })
     })
-  })
-})
+        .then(res => {
 
-$('#buttonEditSubmit').on('click', (e) => {
-  e.preventDefault()
+            console.log(res.json());
+            location.assign('/admin')
+        })
+}
 
-  let editUser = {
-    id: $('#id').val(),
-    username: $('#firstname').val(),
-    lastname: $('#lastname').val(),
-    age: $('#age').val(),
-    email: $('#Email').val(),
-    password: $('#password').val(),
-    roleNames: $('#roles').val(),
-  }
+function getModalEdit(id) {
+    fetch('/api/admin/' + id)
+        .then(res => res.json())
+        .then(user => {
+            let modal = document.getElementById('modalData');
+            modal.innerHTML = '<div class="modal fade"  id="modalEdit"  tabindex="-1" role="dialog" aria-hidden="true">\n' +
+                '                            <div class="modal-dialog">\n' +
+                '                                <div class="modal-content">\n' +
+                '                                    <div class="modal-header">\n' +
+                '                                        <h5 class="modal-title">Edit User</h5>\n' +
+                '                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">\n' +
+                '                                            <span aria-hidden="true">&times;</span>\n' +
+                '                                        </button>\n' +
+                '                                    </div>\n' +
+                '                                    <div class="modal-body">\n' +
+                '                                        <div class="row justify-content-center align-items-center">\n' +
+                '                                            <form class="text-center" method="PUT" >\n' +
+                '                                                <div class="modal-body col-md text-cente">\n' +
+                '                                        <label class="font-weight-bold">ID</label>\n' +
+                '                                        <input type="number"\n' +
+                '                                               class="form-control" \n' +
+                '                                               name="id" \n' +
+                '                                               id="editID" value="' + user.id + '" \n' +
+                '                                               readonly> \n' +
+                '                                        <br>\n' +
+                '                                        <label class="font-weight-bold">First name</label>\n' +
+                '                                        <input type="text"\n' +
+                '                                               class="form-control"\n' +
+                '                                               name="username"\n' +
+                '                                               id="editFirstName" value="' + user.username + '"\n' +
+                '                                               required>\n' +
+                '                                        <br>\n' +
+                '                                        <label class="font-weight-bold">Last name</label>\n' +
+                '                                        <input type="text"\n' +
+                '                                               class="form-control"\n' +
+                '                                               name="lastname"\n' +
+                '                                               id="editLastName" value="' + user.lastname + '"\n' +
+                '                                               required>\n' +
+                '                                        <br>\n' +
+                '                                        <label class="font-weight-bold">Age</label>\n' +
+                '                                        <input type="text"\n' +
+                '                                               class="form-control"\n' +
+                '                                               name="age"\n' +
+                '                                               id="editAge" value="' + user.age + '"\n' +
+                '                                               required>\n' +
+                '                                        <br>\n' +
+                '                                        <label class="font-weight-bold">Email</label>\n' +
+                '                                        <input type="text"\n' +
+                '                                               class="form-control"\n' +
+                '                                               name="email"\n' +
+                '                                               id="editEmail" value="' + user.email + '"\n' +
+                '                                               required>\n' +
+                '                                        <br>\n' +
+                '                                        <label class="font-weight-bold">Password</label>\n' +
+                '                                        <input type="password"\n' +
+                '                                               class="form-control"\n' +
+                '                                               name="password"\n' +
+                '                                               id="editPassword" value="' + user.password + '"\n' +
+                '                                               required>\n' +
+                '                                        <br>\n' +
+                '                                                    <label class="font-weight-bold">Role</label>\n' +
+                '                                                    <select multiple size="2" class="form-control"  id="editRole"\n' +
+                '                                                            name="roles" required>\n' +
+                '                                                        <option value="ADMIN" >ADMIN</option>\n' +
+                '                                                        <option value="USER" >USER</option>\n' +
+                '                                                    </select>\n' +
+                '                                                </div>\n' +
+                '                                            </form>\n' +
+                '                                        </div>\n' +
+                '                                    </div>\n' +
+                '                                    <div class="modal-footer">\n' +
+                '                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close\n' +
+                '                                        </button>\n' +
+                '                                        <button type="submit" data-dismiss="modal" class="btn btn-info" onclick="edit()">Edit\n' +
+                '                                        </button>\n' +
+                '                                    </div>\n' +
+                '                                </div>\n' +
+                '                            </div>\n' +
+                '                        </div>';
+            $("#modalEdit").modal();
+        });
+}
 
-  $.ajax({
-    url: '/api/admin',
-    type: 'PUT',
-    contentType: 'application/json; charset=utf-8',
-    dataType: 'json',
-    data: JSON.stringify(editUser),
-  })
-
-  $('#editUserModal').modal('hide'),
-      location.reload()
-  getAllUsers()
-})
 //--------------------------------------------------------------------------------------------------------------------//
 //                                            Удаляем пользователя                                                    //
-$('#deleteUserModal').on('show.bs.modal', (e) => {
-  let userId = $(e.relatedTarget).data('user-id')
-
-  $.ajax({
-    url: '/api/admin/' + userId,
-    type: 'GET',
-    dataType: 'json',
-  }).done((msg) => {
-    let user = JSON.parse(JSON.stringify(msg))
-
-    $('#id1').empty().val(user.id)
-    $('#firstname1').empty().val(user.username)
-    $('#lastname2').empty().val(user.lastname)
-    $('#age2').empty().val(user.age)
-    $('#email2').empty().val(user.email)
-    $('#delPas').empty().val(user.password)
-
-    $('#buttonDelete').on('click', (e) => {
-      e.preventDefault()
-
-      $.ajax({
-        url: '/api/admin/' + userId,
-        type: 'DELETE',
-        dataType: 'text',
-      }).done((deleteMsg) => {
-        $(`#deleteUserModal`).modal('hide')
-        location.reload()
-      })
+function getDelete(id) {
+    fetch('/api/admin/' + id, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            'Accept': 'application/json'
+        }
     })
-  })
-})
+        .then(res => {
+            $('#' + id).remove();
+            location.assign('/admin')
+        });
+}
+
+function getModalDelete(id) {
+    fetch('/api/admin/' + id)
+        .then(res => res.json())
+        .then(user => {
+            let rolesString = "";
+            user.roles.forEach(role => rolesString += role.name + " ");
+            let modal = document.getElementById('modalData')
+            modal.innerHTML = '<div class="modal fade"  id="delete"  tabindex="-1" role="dialog" aria-hidden="true">\n' +
+                '                            <div class="modal-dialog">\n' +
+                '                                <div class="modal-content">\n' +
+                '                                    <div class="modal-header">\n' +
+                '                                        <h5 class="modal-title">Edit User</h5>\n' +
+                '                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">\n' +
+                '                                            <span aria-hidden="true">&times;</span>\n' +
+                '                                        </button>\n' +
+                '                                    </div>\n' +
+                '                                    <div class="modal-body">\n' +
+                '                                        <div class="row justify-content-center align-items-center">\n' +
+                '                                            <form class="text-center" method="PUT" >\n' +
+                '                                                <div class="modal-body col-md text-cente">\n' +
+                '                                        <label class="font-weight-bold">ID</label>\n' +
+                '                                        <input type="number"\n' +
+                '                                               class="form-control" \n' +
+                '                                               name="id" \n' +
+                '                                               value="' + user.id + '" \n' +
+                '                                               readonly> \n' +
+                '                                        <br>\n' +
+                '                                        <label class="font-weight-bold">First name</label>\n' +
+                '                                        <input type="text"\n' +
+                '                                               class="form-control"\n' +
+                '                                               name="username"\n' +
+                '                                               value="' + user.username + '"\n' +
+                '                                               readonly>\n' +
+                '                                        <br>\n' +
+                '                                        <label class="font-weight-bold">Last name</label>\n' +
+                '                                        <input type="text"\n' +
+                '                                               class="form-control"\n' +
+                '                                               name="lastname"\n' +
+                '                                               value="' + user.lastname + '"\n' +
+                '                                               readonly>\n' +
+                '                                        <br>\n' +
+                '                                        <label class="font-weight-bold">Age</label>\n' +
+                '                                        <input type="text"\n' +
+                '                                               class="form-control"\n' +
+                '                                               name="age"\n' +
+                '                                               value="' + user.age + '"\n' +
+                '                                               readonly>\n' +
+                '                                        <br>\n' +
+                '                                        <label class="font-weight-bold">Email</label>\n' +
+                '                                        <input type="text"\n' +
+                '                                               class="form-control"\n' +
+                '                                               name="email"\n' +
+                '                                               value="' + user.email + '"\n' +
+                '                                               readonly>\n' +
+                '                                        <br>\n' +
+                '                                        <label class="font-weight-bold">Password</label>\n' +
+                '                                        <input type="password"\n' +
+                '                                               class="form-control"\n' +
+                '                                               name="password"\n' +
+                '                                               value="' + user.password + '"\n' +
+                '                                               readonly>\n' +
+                '                                        <br>\n' +
+                '                                                    <label class="font-weight-bold">Role</label>\n' +
+                '                                                     <input type="text"\n' +
+                '                                                     class="form-control"\n' +
+                '                                                     name="role"\n' +
+                '                                                     value="' + rolesString + '"\n' +
+                '                                                     readonly>\n' +
+                '                                                </div>\n' +
+                '                                            </form>\n' +
+                '                                        </div>\n' +
+                '                                    </div>\n' +
+                '                                    <div class="modal-footer">\n' +
+                '                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close\n' +
+                '                                        </button>\n' +
+                '                                        <button type="submit" data-dismiss="modal" class="btn btn-danger" onclick="getDelete(' + user.id + ')">Delete\n' +
+                '                                        </button>\n' +
+                '                                    </div>\n' +
+                '                                </div>\n' +
+                '                            </div>\n' +
+                '                        </div>';
+            $("#delete").modal();
+        });
+}
 //--------------------------------------------------------------------------------------------------------------------//
 //                                           Добавляем пользователя                                                   //
-$('[href="#new"]').on('show.bs.tab', (e) => {
-  $.getJSON('/api/admin/roles', function (addNewUser) {
-    $(() => {
-      $('#name').empty().val('')
-      $('#lastname3').empty().val('')
-      $('#age3').empty().val('')
-      $('#email3').empty().val('')
-      $('#password3').empty().val('')
-      $('#roles3').empty().val('')
-      $.each(addNewUser, function (k, role) {
-        $('#roles3').append(
-            $('<option>').text(role.name),
-        )
-      })
+async function addNewUser() {
+    await  document.getElementById('new').addEventListener('submit', e => {
+        e.preventDefault()
+
+        let username = document.getElementById('newFirstName').value;
+        let lastname = document.getElementById('newLastName').value;
+        let age = document.getElementById('newAge').value;
+        let email = document.getElementById('newEmail').value;
+        let password = document.getElementById('newPassword').value;
+        let role = document.getElementById('newRole').value;
+
+        let rol = [];
+        if (role === "ADMIN") {
+            let role = {
+                'id': 1,
+                'name': 'ADMIN'
+            }
+            rol.push(role)
+        }
+        if (role === "USER") {
+            let role = {
+                'id': 2,
+                'name': 'USER'
+            }
+            rol.push(role)
+        }
+
+        fetch('/api/admin/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                username,
+                lastname,
+                age,
+                email,
+                password,
+                'roles': rol
+            })
+        })
+            .then(res =>
+                console.log(res.json()))
+            .then(data => location.assign('/admin'))
     })
-  })
-})
-$('#buttonNew').on('click', (e) => {
-  e.preventDefault()
+}
+//___________________________________________//
+let roleList = [
+    {id: 1, role: "ADMIN"},
+    {id: 2, role: "USER"}
+]
+let isUser = true;
 
-  let addNewUser = {
-    username: $('#name').val(),
-    lastname: $('#lastname3').val(),
-    age: $('#age3').val(),
-    email: $('#email3').val(),
-    password: $('#password3').val(),
-    roleNames: $('#roles3').val(),
-  }
-  let json = JSON.stringify(addNewUser);
-  console.log(json);
-
-  $.ajax({
-    url: '/api/admin',
-    type: 'POST',
-    contentType: 'application/json; charset=utf-8',
-    dataType: 'json',
-    data: json,
-  })
-  getAllUsers(),
-      $('#testTab a[href="#admins"]').tab('show')
-  location.reload()
+$(async function () {
 })
-//--------------------------------------------------------------------------------------------------------------------//
-//                                           Вывод пользователя в UIP                                                 //
 
-$('[href="#users-panel"]').on('show.bs.tab', (e) => {
-  $('#change-tabContent').hide(),
-      getCurrent()
-})
-function getCurrent () {
-  $.ajax({
-    url: '/getUser',
-    type: 'GET',
-    dataType: 'json',
-  }).done((msg) => {
-    let user = JSON.parse(JSON.stringify(msg))
-    let roleAss = []
-    for (let i = 0; i < user.roles.length; i++) {
-      roleAss.push(user.roles[i].name)
-    }
-    $('#current-user-table tbody').empty().append(
-        $('<tr>').append(
-            $('<td>').text(user.id),
-            $('<td>').text(user.username),
-            $('<td>').text(user.lastname),
-            $('<td>').text(user.age),
-            $('<td>').text(user.email),
-            $('<td>').text(roleAss.join(', ')),
-        ))
-  }).fail(() => {
-    alert('Error Get All Users!')
-  })
+const userFetch = {
+    head: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Referer': null
+    },
+    findUserByUsername: async () => await fetch(`/api/admin/getUser`),
+}
+async function getUser() {
+    let temp = '';
+    const table = document.querySelector('#tableUser tbody');
+    await userFetch.findUserByUsername()
+        .then(res => res.json())
+        .then(user => {
+            temp = `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.lastname}</td>
+                    <td>${user.age}</td>
+                    <td>${user.email}</td>
+                    <td>${user.roles.map(e => " " + e.role.substr(5))}</td>
+                </tr>
+            `;
+            table.innerHTML = temp;
+
+            $(function (){
+                let role = ""
+                for (let i = 0; i < user.roles.length; i++) {
+                    role = user.roles[i].role
+                    if (role === "ADMIN") {
+                        isUser = false;
+                    }
+                }
+                if (isUser) {
+                    $("#userTable").addClass("show active");
+                    $("#userTab").addClass("show active");
+                } else {
+                    $("#adminTable").addClass("show active");
+                    $("#adminTab").addClass("show active");
+                }
+            })
+        })
 }
