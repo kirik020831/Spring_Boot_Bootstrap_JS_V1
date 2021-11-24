@@ -45,10 +45,4 @@ public class PageController {
         modelMap.addAttribute("user", user);
         return "user-page";
     }
-
-    @GetMapping("getUser")
-    public ResponseEntity<User> getUser(Principal principal) {
-        User user = userRepository.findByUsername(principal.getName());
-        return new ResponseEntity<>(user, HttpStatus.OK);
-    }
 }

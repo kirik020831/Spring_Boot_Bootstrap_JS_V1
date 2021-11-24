@@ -66,9 +66,4 @@ public class AdminRestController {
         userService.delete(user);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-    @GetMapping("/getUser")
-    public ResponseEntity<User> getUser(Principal principal) {
-        User user = userRepository.findByUsername(principal.getName());
-        return new ResponseEntity<>(user, HttpStatus.OK);
-    }
 }

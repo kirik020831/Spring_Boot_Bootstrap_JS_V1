@@ -47,6 +47,7 @@ async function getAllUsers() {
         defaultModal.modal('show');
     })
 }
+
 //____________________________________________________________________________________________________________________//
 //                                            Редактируем пользователя                                                //
 function edit() {
@@ -162,7 +163,7 @@ function getModalEdit(id) {
                 '                                                    <label class="font-weight-bold">Role</label>\n' +
                 '                                                    <select multiple size="2" class="form-control"  id="editRole"\n' +
                 '                                                            name="roles" required>\n' +
-                '                                                        <option value="ADMIN" >ADMIN</option>\n' +
+                '                                                        <option value="ADMIN">ADMIN</option>\n' +
                 '                                                        <option value="USER" >USER</option>\n' +
                 '                                                    </select>\n' +
                 '                                                </div>\n' +
@@ -285,7 +286,7 @@ function getModalDelete(id) {
 //--------------------------------------------------------------------------------------------------------------------//
 //                                           Добавляем пользователя                                                   //
 async function addNewUser() {
-    await  document.getElementById('new').addEventListener('submit', e => {
+    await document.getElementById('new').addEventListener('submit', e => {
         e.preventDefault()
 
         let username = document.getElementById('newFirstName').value;
@@ -330,58 +331,4 @@ async function addNewUser() {
                 console.log(res.json()))
             .then(data => location.assign('/admin'))
     })
-}
-//___________________________________________//
-let roleList = [
-    {id: 1, role: "ADMIN"},
-    {id: 2, role: "USER"}
-]
-let isUser = true;
-
-$(async function () {
-})
-
-const userFetch = {
-    head: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Referer': null
-    },
-    findUserByUsername: async () => await fetch(`/api/admin/getUser`),
-}
-async function getUser() {
-    let temp = '';
-    const table = document.querySelector('#tableUser tbody');
-    await userFetch.findUserByUsername()
-        .then(res => res.json())
-        .then(user => {
-            temp = `
-                <tr>
-                    <td>${user.id}</td>
-                    <td>${user.username}</td>
-                    <td>${user.lastname}</td>
-                    <td>${user.age}</td>
-                    <td>${user.email}</td>
-                    <td>${user.roles.map(e => " " + e.role.substr(5))}</td>
-                </tr>
-            `;
-            table.innerHTML = temp;
-
-            $(function (){
-                let role = ""
-                for (let i = 0; i < user.roles.length; i++) {
-                    role = user.roles[i].role
-                    if (role === "ADMIN") {
-                        isUser = false;
-                    }
-                }
-                if (isUser) {
-                    $("#userTable").addClass("show active");
-                    $("#userTab").addClass("show active");
-                } else {
-                    $("#adminTable").addClass("show active");
-                    $("#adminTab").addClass("show active");
-                }
-            })
-        })
 }
