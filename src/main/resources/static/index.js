@@ -3,7 +3,6 @@
 $(document).ready(function () {
     getAllUsers();
 });
-const del = document.getElementById('delete')
 const table = document.querySelector('#tableAllUsers tbody');
 let temp = '';
 
@@ -36,18 +35,8 @@ async function getAllUsers() {
             table.innerHTML = temp;
         });
     $("#tableAllUsers").find('button').on('click', (event) => {
-        let defaultModal = $('#defaultModal');
-
-        let targetButton = $(event.target);
-        let buttonUserId = targetButton.attr('data-userid');
-        let buttonAction = targetButton.attr('data-action');
-
-        defaultModal.attr('data-userid', buttonUserId);
-        defaultModal.attr('data-action', buttonAction);
-        defaultModal.modal('show');
     })
 }
-
 //____________________________________________________________________________________________________________________//
 //                                            Редактируем пользователя                                                //
 function edit() {
