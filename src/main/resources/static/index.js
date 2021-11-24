@@ -34,8 +34,7 @@ async function getAllUsers() {
             });
             table.innerHTML = temp;
         });
-    $("#tableAllUsers").find('button').on('click', (event) => {
-    })
+    $("#tableAllUsers")
 }
 //____________________________________________________________________________________________________________________//
 //                                            Редактируем пользователя                                                //
