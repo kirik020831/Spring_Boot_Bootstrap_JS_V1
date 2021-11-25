@@ -18,16 +18,14 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/admin",produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/admin", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AdminRestController {
     private final UserService userService;
     private final RoleService roleService;
-    private final UserRepository userRepository;
 
-    public AdminRestController(UserService userService, RoleService roleService, UserRepository userRepository) {
+    public AdminRestController(UserService userService, RoleService roleService) {
         this.userService = userService;
         this.roleService = roleService;
-        this.userRepository = userRepository;
     }
 
     @GetMapping("/list")
@@ -40,7 +38,7 @@ public class AdminRestController {
     public ResponseEntity<User> addNewUser(@RequestBody User user) {
         HttpHeaders headers = new HttpHeaders();
         userService.saveUser(user);
-        return new ResponseEntity<>(user,headers,HttpStatus.CREATED);
+        return new ResponseEntity<>(user, headers, HttpStatus.CREATED);
     }
 
     @GetMapping("/roles")
@@ -57,7 +55,7 @@ public class AdminRestController {
     @PutMapping("/update")
     public ResponseEntity<User> editUser(@RequestBody User user) {
         userService.update(user);
-        return new ResponseEntity<>(user,HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
