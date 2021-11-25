@@ -31,9 +31,16 @@
     <div class="row">
         <div class="col-2 px-0">
             <br>
-            <nav class="nav flex-column nav-pills">
-                <a class="nav-link active" href="/user">User</a>
-            </nav>
+            <ul class="nav nav-pills flex-column">
+                <div sec:authorize="hasAuthority('ADMIN')">
+                    <li class="nav-item">
+                        <a href="/admin" class="nav-link">Admin</a>
+                    </li>
+                </div>
+                <li class="nav-item">
+                    <a href="/user" class="nav-link active">User</a>
+                </li>
+            </ul>
         </div>
         <div class="container secondary col-sm-10 px-0">
             <div class="col-12 bg-light vh-100">
